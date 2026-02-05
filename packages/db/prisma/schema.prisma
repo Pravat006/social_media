@@ -1,0 +1,424 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id               String    @id @default(cuid())
+  username         String    @unique
+  email            String    @unique
+  password         String?
+  name             String?
+  bio              String?   @db.Text
+  profilePictureId String?   @unique
+  isVerified       Boolean   @default(false)
+  isPrivate        Boolean   @default(false)
+  lastSeen         DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  profilePicture Media? @relation("UserAvatar", fields: [profilePictureId], references: [id], onDelete: SetNull)
+
+  posts            Post[]
+  messages         Message[]
+  comments         Comment[]
+  followers        Follow[]          @relation("followers")
+  following        Follow[]          @relation("following")
+  chats            ChatMember[]
+  media            Media[]           @relation("UserMedia")
+  postLikes        PostLike[]
+  stories          Story[]
+  messageReactions MessageReaction[]
+  messageReads     MessageRead[]
+  storyViews       StoryView[]
+  callDatas        CallData[]
+  liveStreams      LiveStream[]
+  liveViewers      LiveViewer[]
+  liveMessages     LiveMessage[]
+  liveReactions    LiveReaction[]
+
+  @@index([username])
+  @@index([email])
+  @@index([profilePictureId])
+  @@map("users")
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("following", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("followers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+  @@map("follows")
+}
+
+model Media {
+  id        String    @id @default(cuid())
+  ownerId   String
+  url       String
+  type      MediaType
+  mimeType  String?
+  size      Int?
+  width     Int?
+  height    Int?
+  duration  Int?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  owner    User  @relation("UserMedia", fields: [ownerId], references: [id], onDelete: Cascade)
+  avatarOf User? @relation("UserAvatar")
+
+  postMedia     PostMedia[]
+  storyMedia    StoryMedia[]
+  messageMedias MessageMedia[]
+  liveStreams   LiveStream[]
+
+  @@index([ownerId])
+  @@index([type])
+  @@map("media")
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  authorId  String
+  caption   String?  @db.Text
+  views     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author   User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  media    PostMedia[]
+  likes    PostLike[]
+  comments Comment[]
+
+  @@index([authorId])
+  @@index([createdAt])
+  @@map("posts")
+}
+
+model PostMedia {
+  postId  String
+  mediaId String
+
+  post  Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@id([postId, mediaId])
+  @@map("post_media")
+}
+
+model PostLike {
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([userId, postId])
+  @@index([postId])
+  @@map("post_likes")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String
+  authorId  String
+  parentId  String?
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies Comment[] @relation("CommentReplies")
+
+  @@index([postId])
+  @@index([authorId])
+  @@index([parentId])
+  @@map("comments")
+}
+
+model Chat {
+  id        String   @id @default(cuid())
+  type      ChatType
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // helper field to prevent multiple direct chats between two users
+  directKey String? @unique
+
+  members  ChatMember[]
+  messages Message[]
+
+  @@map("chats")
+}
+
+model ChatMember {
+  chatId   String
+  userId   String
+  joinedAt DateTime @default(now())
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([chatId, userId])
+  @@index([userId])
+  @@map("chat_members")
+}
+
+model Message {
+  id        String      @id @default(cuid())
+  chatId    String
+  senderId  String
+  content   String?     @db.Text
+  type      MessageType @default(USER)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  chat             Chat              @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  sender           User              @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  messageMedias    MessageMedia[]
+  messageReactions MessageReaction[]
+  messageReads     MessageRead[]
+  callData         CallData?
+
+  @@index([chatId])
+  @@index([senderId])
+  @@index([chatId, createdAt])
+  @@map("messages")
+}
+
+model MessageMedia {
+  messageId String
+  mediaId   String
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  media   Media   @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@id([messageId, mediaId])
+  @@map("message_media")
+}
+
+model MessageReaction {
+  messageId String
+  userId    String
+  reaction  String
+  createdAt DateTime @default(now())
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([messageId, userId])
+  @@index([messageId])
+  @@index([userId])
+  @@map("message_reactions")
+}
+
+model MessageRead {
+  messageId String
+  userId    String
+  readAt    DateTime @default(now())
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([messageId, userId])
+  @@index([userId])
+  @@index([messageId])
+  @@map("message_reads")
+}
+
+model CallData {
+  id          String     @id @default(cuid())
+  messageId   String     @unique
+  initiatorId String
+  type        CallType
+  status      CallStatus
+  startedAt   DateTime
+  endedAt     DateTime?
+  durationSec Int?
+
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  initiator User    @relation(fields: [initiatorId], references: [id], onDelete: Cascade)
+
+  @@index([initiatorId])
+}
+
+model Story {
+  id        String   @id @default(cuid())
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  media StoryMedia[]
+  views StoryView[]
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("stories")
+}
+
+model StoryView {
+  storyId  String
+  userId   String
+  viewedAt DateTime @default(now())
+
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([storyId, userId])
+  @@index([userId])
+  @@index([storyId])
+  @@map("story_views")
+}
+
+model StoryMedia {
+  storyId String
+  mediaId String
+
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@id([storyId, mediaId])
+  @@map("story_media")
+}
+
+model LiveStream {
+  id          String  @id @default(cuid())
+  hostId      String
+  title       String?
+  description String? @db.Text
+  thumbnailId String?
+  streamKey   String  @unique
+
+  category   String?
+  tags       String[]
+  visibility StreamVisibility @default(PUBLIC)
+
+  startedAt DateTime?
+  endedAt   DateTime?
+  isActive  Boolean   @default(false)
+
+  viewerCount Int @default(0)
+
+  host      User   @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  thumbnail Media? @relation(fields: [thumbnailId], references: [id], onDelete: SetNull)
+
+  viewers   LiveViewer[]
+  messages  LiveMessage[]
+  reactions LiveReaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([hostId])
+  @@index([isActive])
+  @@index([isActive, createdAt])
+  @@map("live_streams")
+}
+
+model LiveViewer {
+  id       String    @id @default(cuid())
+  streamId String
+  userId   String
+  joinedAt DateTime  @default(now())
+  leftAt   DateTime?
+
+  stream LiveStream @relation(fields: [streamId], references: [id], onDelete: Cascade)
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([streamId, userId, leftAt])
+  @@index([streamId])
+  @@index([userId])
+  @@index([streamId, leftAt])
+  @@map("live_viewers")
+}
+
+model LiveMessage {
+  id        String   @id @default(cuid())
+  streamId  String
+  userId    String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+
+  stream LiveStream @relation(fields: [streamId], references: [id], onDelete: Cascade)
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([streamId])
+  @@index([createdAt])
+  @@map("live_messages")
+}
+
+model LiveReaction {
+  id        String   @id @default(cuid())
+  streamId  String
+  userId    String
+  emoji     String
+  createdAt DateTime @default(now())
+
+  stream LiveStream @relation(fields: [streamId], references: [id], onDelete: Cascade)
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([streamId])
+  @@map("live_reactions")
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  AUDIO
+}
+
+enum MessageType {
+  USER
+  SYSTEM
+  CALL
+}
+
+enum ChatType {
+  DIRECT
+  GROUP
+}
+
+enum ReactionType {
+  LIKE
+  LOVE
+  HAHA
+  WOW
+  SAD
+  ANGRY
+}
+
+enum CallType {
+  VIDEO
+  AUDIO
+}
+
+enum CallStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELED
+  ENDED
+  MISSED
+}
+
+enum StreamVisibility {
+  PUBLIC
+  PRIVATE
+  FOLLOWERS_ONLY
+}
