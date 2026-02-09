@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
 import status from "http-status";
-import { logger } from "@/config/logger";
+import { logger } from "@repo/logger";
 
 export const validateRequest = (schema: any) => (req: Request, res: Response, next: NextFunction) => {
     try {

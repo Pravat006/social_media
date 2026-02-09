@@ -9,9 +9,9 @@ import { Application } from 'express';
 const isVercel = Boolean(process.env.VERCEL === '1' || process.env.VERCEL_ENV);
 const logsDir = isVercel
     ? '/tmp/logs'
-    : path.join(__dirname, '../../../logs'); // Adjust relative to this file
+    : path.join(__dirname, '../../../logs');
 
-// Ensure logs directory exists (skip on serverless where /tmp may be read‑only)
+// Ensuring logs directory exists
 if (!fs.existsSync(logsDir)) {
     try {
         fs.mkdirSync(logsDir, { recursive: true });
@@ -104,11 +104,11 @@ const httpLogger = (app: Application) => {
             morgan((tokens, req, res) => {
                 return [
                     `[${localTimestamp()}]`,
-                    tokens.method(req, res),
-                    tokens.url(req, res),
-                    tokens.status(req, res),
+                    tokens.method?.(req, res),
+                    tokens.url?.(req, res),
+                    tokens.status?.(req, res),
                     '- ',
-                    tokens['response-time'](req, res),
+                    tokens['response-time']?.(req, res),
                     'ms',
                 ].join(' ');
             }),
@@ -144,7 +144,7 @@ const cleanupOldLogs = () => {
 
 if (!isVercel) {
     cleanupOldLogs();
-    setInterval(cleanupOldLogs, 24 * 60 * 60 * 1000); // daily
+    setInterval(cleanupOldLogs, 24 * 60 * 60 * 1000);
 }
 
 export { logger, httpLogger };

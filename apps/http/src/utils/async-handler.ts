@@ -1,10 +1,10 @@
-import { IAdmin } from "@repo/shared";
+import { IUser } from "@repo/shared";
 import { NextFunction, Request, Response, RequestHandler } from "express";
 
 declare global {
     namespace Express {
         interface Request {
-            admin?: IAdmin;
+            user?: IUser;
         }
     }
 }

@@ -1,8 +1,12 @@
-import { createClient } from 'redis';
-import config from "@/config"
-import { logger } from '@/config/logger';
-const client = createClient({ url: config.REDIS_URL });
+import { logger } from "@repo/logger";
+import Redis from "ioredis";
+import { config } from "@repo/env-config";
 
+
+const client = new Redis({
+    host: config.REDIS_HOST,
+    port: config.REDIS_PORT,
+});
 client.on('connect', () => logger.info('[Redis] Connecting...'));
 client.on('ready', () => logger.info('[Redis] Connected successfully.'));
 client.on('error', () => logger.error('[Redis] Connection error'));
@@ -12,10 +16,10 @@ const CACHE_TTL = 900;
 
 export const redis = {
     async connect() {
-        if (!client.isOpen) await client.connect();
+        if (client.status !== 'ready') await client.connect();
     },
     async quit() {
-        if (client.isOpen)
+        if (client.status === 'ready')
             await client.quit();
     },
     async get<T>(key: string): Promise<T | null> {
@@ -32,7 +36,7 @@ export const redis = {
 
     async set<T>(key: string, value: T, ttl: number = CACHE_TTL): Promise<boolean> {
         await this.connect();
-        const result = await client.set(key, JSON.stringify(value), { EX: ttl });
+        const result = await client.set(key, JSON.stringify(value), 'EX', ttl);
         return result === 'OK';
     },
 
@@ -46,10 +50,7 @@ export const redis = {
         await this.connect();
         let cursor = '0';
         do {
-            const { cursor: nextCursor, keys } = await client.scan(cursor, {
-                MATCH: pattern,
-                COUNT: 100,
-            });
+            const [nextCursor, keys] = await client.scan(cursor, 'MATCH', pattern, 'COUNT', 100);
             cursor = nextCursor;
             if (keys.length > 0) {
                 await client.del(keys);
@@ -60,6 +61,11 @@ export const redis = {
 
     async flushAll(): Promise<void> {
         await this.connect();
-        await client.flushAll();
+        await client.flushdb();
+    },
+
+    async publish(channel: string, message: any): Promise<number> {
+        await this.connect();
+        return await client.publish(channel, JSON.stringify(message));
     }
 };

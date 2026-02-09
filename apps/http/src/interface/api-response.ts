@@ -1,4 +1,4 @@
-import { logger } from "@/config/logger";
+import { logger } from "@repo/logger";
 import status from "http-status";
 
 export class ApiResponse {

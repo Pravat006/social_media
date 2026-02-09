@@ -1,20 +1,22 @@
 {
+  "extends": "@repo/typescript-config/base.json",
   "compilerOptions": {
-    "target": "ES2022",
     "module": "ESNext",
-    "lib": ["ES2022"],
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
     "moduleResolution": "node",
     "declaration": true,
     "sourceMap": true,
     "outDir": "./dist",
     "rootDir": "./src",
     "baseUrl": ".",
-    "types": ["node"]
+    "types": [
+      "node"
+    ]
   },
-  "include": ["src/**/*"],
-  "exclude": ["dist", "node_modules"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules"
+  ]
 }

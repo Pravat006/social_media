@@ -1,4 +1,4 @@
-import { IAdmin } from '@repo/shared';
+import { IUser } from '@repo/shared';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import config from "@/config"
 
@@ -6,10 +6,11 @@ export type Payload = {
     id: string;
     name: string;
     email: string;
+    username?: string;
 };
 
 const generateAccessToken = (payload: Payload) => {
-    const options: SignOptions = { expiresIn: config.JWT_ACCESS_TOKEN_EXPIRY };
+    const options: SignOptions = { expiresIn: config.JWT_ACCESS_TOKEN_EXPIRY as SignOptions['expiresIn'] };
     return jwt.sign(
         payload,
         config.JWT_ACCESS_TOKEN_SECRET,
@@ -18,7 +19,7 @@ const generateAccessToken = (payload: Payload) => {
 };
 
 const generateRefreshToken = (payload: Payload) => {
-    const options: SignOptions = { expiresIn: config.JWT_REFRESH_TOKEN_EXPIRY };
+    const options: SignOptions = { expiresIn: config.JWT_REFRESH_TOKEN_EXPIRY as SignOptions['expiresIn'] };
     return jwt.sign(
         payload,
         config.JWT_REFRESH_TOKEN_SECRET,
@@ -26,11 +27,12 @@ const generateRefreshToken = (payload: Payload) => {
     );
 };
 
-export const generateTokens = (admin: IAdmin) => {
+export const generateTokens = (user: IUser | { id: string; name?: string | null; email: string; username?: string }) => {
     const payload: Payload = {
-        id: admin.id,
-        name: admin.name,
-        email: admin.email,
+        id: user.id,
+        name: user.name || '',
+        email: user.email,
+        username: 'username' in user ? user.username : undefined,
     };
     const accessToken = generateAccessToken(payload);
     const refreshToken = generateRefreshToken(payload);

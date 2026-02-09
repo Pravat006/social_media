@@ -1,11 +1,11 @@
 import app from "@/app";
-import * as process from "node:process";
-import dotenv from "dotenv";
-import { logger } from "./config/logger";
+import { logger } from "@repo/logger";
 
-dotenv.config({ path: "./.env" });
+import config from "@/config";
 
-const PORT = Number(process.env.PORT) || 3000;
+// dotenv is already loaded by @repo/env-config
+
+const PORT = config.PORT || 3000;
 const HOST = '0.0.0.0';
 
 app.listen(PORT, HOST, () => {
