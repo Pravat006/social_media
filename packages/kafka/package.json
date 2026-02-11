@@ -7,7 +7,9 @@
     "build": "tsc"
   },
   "dependencies": {
-    "kafkajs": "^2.2.4"
+    "kafkajs": "^2.2.4",
+    "@repo/logger": "workspace:*",
+    "@repo/env-config": "workspace:*"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
