@@ -1,7 +1,22 @@
-// WebSocket Event Types for Client Integration
+/**
+ * WebSocket Event Types
+ */
 
-// Chat Events
+
+export interface SocketUser {
+    id: string;
+    username: string;
+    email: string;
+    name?: string | null;
+    profilePictureId?: string | null;
+}
+
+
 export interface ChatJoinData {
+    chatId: string;
+}
+
+export interface ChatLeaveData {
     chatId: string;
 }
 
@@ -23,11 +38,15 @@ export interface ChatReadData {
 
 export interface ChatReactionData {
     messageId: string;
-    reaction: string;
+    reaction: string;  // Emoji or reaction type
 }
 
-// Live Stream Events
+
 export interface LiveJoinData {
+    streamId: string;
+}
+
+export interface LiveLeaveData {
     streamId: string;
 }
 
@@ -46,7 +65,7 @@ export interface LiveStatusData {
     status: 'started' | 'ended';
 }
 
-// Notification Events
+
 export interface NotificationData {
     type: 'like' | 'comment' | 'follow' | 'mention' | 'message';
     title: string;
@@ -55,32 +74,127 @@ export interface NotificationData {
     createdAt: Date;
 }
 
-// Server to Client Events
+
 export interface ServerToClientEvents {
-    // Chat
-    'chat:joined': (data: { chatId: string }) => void;
-    'chat:message': (message: any) => void;
-    'chat:typing': (data: { chatId: string; userId: string; username?: string; isTyping: boolean }) => void;
-    'chat:read': (data: { chatId: string; messageId: string; userId: string }) => void;
-    'chat:reaction': (data: { messageId: string; userId: string; reaction: string; username?: string }) => void;
+    // Chat Events
+    'chat:joined': (data: {
+        chatId: string;
+        userId: string;
+        username: string;
+    }) => void;
 
-    // Live Stream
-    'live:joined': (data: { streamId: string }) => void;
-    'live:viewer-count': (data: { streamId: string; count: number }) => void;
-    'live:message': (message: any) => void;
-    'live:reaction': (data: { streamId: string; userId: string; username?: string; emoji: string; timestamp: number }) => void;
-    'live:status': (data: { streamId: string; status: string }) => void;
+    'chat:left': (data: {
+        chatId: string;
+        userId: string;
+        username: string;
+    }) => void;
 
-    // Notifications
+    'chat:message': (data: {
+        id: string;
+        chatId: string;
+        senderId: string;
+        senderUsername: string;
+        senderName?: string | null;
+        senderAvatar?: string | null;
+        content: string;
+        type: 'USER' | 'SYSTEM' | 'CALL';
+        createdAt: string;
+        tempId?: string;
+    }) => void;
+
+    'chat:typing': (data: {
+        chatId: string;
+        userId: string;
+        username: string;
+        isTyping: boolean;
+    }) => void;
+
+    'chat:read': (data: {
+        chatId: string;
+        messageId: string;
+        userId: string;
+        readAt: string;
+    }) => void;
+
+    'chat:reaction': (data: {
+        messageId: string;
+        userId: string;
+        username: string;
+        reaction: string;
+        createdAt: string;
+    }) => void;
+
+    // Live Stream Events
+    'live:joined': (data: {
+        streamId: string;
+        userId: string;
+        username: string;
+    }) => void;
+
+    'live:left': (data: {
+        streamId: string;
+        userId: string;
+        username: string;
+    }) => void;
+
+    'live:viewer-count': (data: {
+        streamId: string;
+        count: number;
+    }) => void;
+
+    'live:message': (data: {
+        id: string;
+        streamId: string;
+        userId: string;
+        username: string;
+        content: string;
+        createdAt: string;
+    }) => void;
+
+    'live:reaction': (data: {
+        streamId: string;
+        userId: string;
+        username: string;
+        emoji: string;
+        timestamp: number;
+    }) => void;
+
+    'live:status': (data: {
+        streamId: string;
+        status: 'started' | 'ended';
+        startedAt?: string;
+        endedAt?: string;
+    }) => void;
+
+    // Notification Events
     'notification': (notification: NotificationData) => void;
 
-    // General
-    'error': (error: { message: string }) => void;
+    // User Presence Events
+    'user:online': (data: {
+        userId: string;
+        username: string;
+    }) => void;
+
+    'user:offline': (data: {
+        userId: string;
+        username: string;
+        lastSeen: string;
+    }) => void;
+
+    // General Events
+    'error': (error: {
+        message: string;
+        code?: string;
+    }) => void;
+
+    'success': (data: {
+        message: string;
+        data?: any;
+    }) => void;
 }
 
-// Client to Server Events
 export interface ClientToServerEvents {
-    // Chat
+    // Chat Events
     'chat:join': (chatId: string) => void;
     'chat:leave': (chatId: string) => void;
     'chat:message': (data: ChatMessageData) => void;
@@ -88,13 +202,46 @@ export interface ClientToServerEvents {
     'chat:read': (data: ChatReadData) => void;
     'chat:reaction': (data: ChatReactionData) => void;
 
-    // Live Stream
+    // Live Stream Events
     'live:join': (streamId: string) => void;
     'live:leave': (streamId: string) => void;
     'live:message': (data: LiveMessageData) => void;
     'live:reaction': (data: LiveReactionData) => void;
     'live:status': (data: LiveStatusData) => void;
 
-    // User
+    // User Presence Events
     'user:online': () => void;
+    'user:offline': () => void;
 }
+
+export interface InterServerEvents {
+    ping: () => void;
+    'user:broadcast': (data: {
+        userId: string;
+        event: string;
+        data: any;
+    }) => void;
+}
+
+
+export interface SocketData {
+    userId: string;
+    user: SocketUser;
+}
+
+export interface AuthenticatedSocket {
+    id: string;
+    data: SocketData;
+    user: SocketUser;
+    join: (room: string) => void;
+    leave: (room: string) => void;
+    emit: <K extends keyof ServerToClientEvents>(
+        event: K,
+        ...args: Parameters<ServerToClientEvents[K]>
+    ) => boolean;
+    on: <K extends keyof ClientToServerEvents>(
+        event: K,
+        listener: ClientToServerEvents[K]
+    ) => void;
+}
+
