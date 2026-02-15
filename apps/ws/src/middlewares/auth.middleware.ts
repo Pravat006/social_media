@@ -1,8 +1,8 @@
 import { Socket } from 'socket.io';
-import jwt from 'jsonwebtoken';
-import config from '@/config';
-import db from '@/config/db';
+import { verifyToken } from '@repo/auth';
+
 import { logger } from '@repo/logger';
+import db from '@/config/db';
 
 export interface AuthenticatedSocket extends Socket {
     userId?: string;
@@ -23,7 +23,11 @@ export const authenticateSocket = async (socket: AuthenticatedSocket, next: (err
         }
 
         // Verify token
-        const decoded = jwt.verify(token, config.JWT_ACCESS_TOKEN_SECRET) as { id: string; email: string; name: string };
+        const decoded = verifyToken(token);
+
+        if (!decoded) {
+            return next(new Error('Invalid or expired token'));
+        }
 
         // Get user from database
         const user = await db.user.findUnique({
