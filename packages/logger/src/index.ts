@@ -4,9 +4,10 @@ import fs from 'fs';
 import path from 'path';
 import morgan from 'morgan';
 import { Application } from 'express';
+import { config } from '@repo/env-config'
 
 // Determine log directory (use /tmp on Vercel/serverless, otherwise a local logs folder)
-const isVercel = Boolean(process.env.VERCEL === '1' || process.env.VERCEL_ENV);
+const isVercel = Boolean(config.VERCEL_ENV);
 const logsDir = isVercel
     ? '/tmp/logs'
     : path.join(__dirname, '../../../logs');
@@ -67,7 +68,7 @@ const logger = winston.createLogger({
             return `[${timestamp}] ${level}: ${message}`;
         }),
     ),
-    defaultMeta: { service: 'filesphere-backend' },
+    defaultMeta: { service: 'social-media-backend' },
     transports: fileTransports,
 });
 

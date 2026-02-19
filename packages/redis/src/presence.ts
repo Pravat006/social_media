@@ -3,9 +3,7 @@ import client from "./client";
 import { publishDTO } from "./pubsub";
 import type { UserPresenceDTO } from "./types";
 
-/**
- * Ensure Redis client is connected
- */
+
 async function ensureConnection() {
     if (client.status !== 'ready') {
         await client.connect();
