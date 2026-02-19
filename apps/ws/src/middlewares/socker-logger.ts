@@ -1,7 +1,7 @@
 import { logger } from "@repo/logger";
-import type { Socket } from "socket.io";
+import { IOSocket } from "../@types";
 
-const socketLogger = (socket: Socket) => {
+const socketLogger = (socket: IOSocket) => {
     logger.info("Socket connected", {
         socketId: socket.id,
         namespace: socket.nsp.name,

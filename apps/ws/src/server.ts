@@ -1,5 +1,5 @@
 import http from 'http';
-import { Server } from 'socket.io';
+import { Server as SocketIoServer } from 'socket.io';
 import {
     connectPublisher,
     connectSubscriber,
@@ -7,22 +7,28 @@ import {
 } from './redis';
 import { config } from './config';
 import { logger } from '@repo/logger';
-import { AuthenticatedSocket, authenticateSocket } from './middlewares/auth.middleware';
-import { setupChatHandlers } from './handlers/chat.handler';
+import { IOSocket } from './@types';
+import { authenticateSocket } from './middlewares/auth-middleware';
+import { requireRoomAccess } from './middlewares/require-room-access';
 import socketLogger from './middlewares/socker-logger';
+
+import { MembershipService } from './services/membeship-service';
 import { createRedisAdapter } from './redis-adapter';
+import { connectProducer, disconnectProducer } from '@repo/kafka';
+import { setupChatHandlers, setUpJoinHandler, setupPresenceHandler } from './handlers';
 
 const startServer = async () => {
     try {
-        logger.info('Connecting to redis...');
+        logger.info('Connecting to redis and kafka producer...');
         await Promise.all([
             connectPublisher(),
-            connectSubscriber()
+            connectSubscriber(),
+            connectProducer()
         ]);
         const httpServer = http.createServer();
 
 
-        const io = new Server(httpServer, {
+        const io = new SocketIoServer(httpServer, {
             cors: {
                 origin: config.CORS_ORIGIN,
                 credentials: true,
@@ -42,11 +48,15 @@ const startServer = async () => {
 
 
 
-        io.on('connection', (socket: AuthenticatedSocket) => {
+        const membershipService = new MembershipService();
+
+        io.on('connection', (socket: IOSocket) => {
             logger.info(`User authenticated: ${socket.user?.username} (${socket.id})`);
 
-
+            requireRoomAccess(socket);
+            setUpJoinHandler(io, socket, membershipService);
             setupChatHandlers(io, socket);
+            setupPresenceHandler(io, socket);
 
             socket.on('disconnect', (reason: string) => {
                 logger.info("User disconnected", {
@@ -81,6 +91,7 @@ const startServer = async () => {
             logger.info('Shutting down gracefully...');
             io.close();
             httpServer.close();
+            await disconnectProducer();
             process.exit(0);
         };
 
@@ -93,4 +104,8 @@ const startServer = async () => {
     }
 };
 
-startServer();
+export { startServer };
+
+if (require.main === module) {
+    startServer();
+}

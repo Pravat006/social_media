@@ -10,7 +10,7 @@ class ChatService {
         return chat?.members || [];
     }
 
-    async checkChatMembership(chatId: string, userId: string) {
+    async checkChatMembership(chatId: string, userId: string): Promise<boolean> {
         const membership = await db.chatMember.findUnique({
             where: {
                 chatId_userId: {

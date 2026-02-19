@@ -23,6 +23,7 @@
     "@repo/logger": "workspace:*",
     "@repo/redis": "workspace:*",
     "@repo/shared": "workspace:*",
+    "@repo/kafka":"workspace:*",
     "@socket.io/redis-adapter": "^8.3.0",
     "cors": "^2.8.5",
     "http-status": "^2.1.0",

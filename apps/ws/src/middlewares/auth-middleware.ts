@@ -1,20 +1,9 @@
-import { Socket } from 'socket.io';
 import { verifyToken } from '@repo/auth';
-
 import { logger } from '@repo/logger';
 import db from '@/config/db';
+import { IOSocket } from '../@types';
 
-export interface AuthenticatedSocket extends Socket {
-    userId?: string;
-    user?: {
-        id: string;
-        username: string;
-        email: string;
-        name?: string | null;
-    };
-}
-
-export const authenticateSocket = async (socket: AuthenticatedSocket, next: (err?: Error) => void) => {
+export const authenticateSocket = async (socket: IOSocket, next: (err?: any) => void) => {
     try {
         const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.replace('Bearer ', '');
 
@@ -37,6 +26,7 @@ export const authenticateSocket = async (socket: AuthenticatedSocket, next: (err
                 username: true,
                 email: true,
                 name: true,
+                profilePicture: true,
             },
         });
 
