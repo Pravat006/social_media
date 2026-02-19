@@ -3,7 +3,7 @@ import { ChatTypeEnum, MessageTypeEnum } from "../constants";
 
 // Chat schemas
 export const createChatSchema = z.object({
-    type: ChatTypeEnum,
+    type: ChatTypeEnum.optional(),
     name: z.string().min(1).max(100).optional(),
     memberIds: z.array(z.string()).min(1, "At least one member is required"),
 });
@@ -20,6 +20,27 @@ export const addReactionSchema = z.object({
     reaction: z.string().min(1).max(10),
 });
 
+export const deleteChatSchema = z.object({
+    chatId: z.string(),
+    userId: z.string(),
+});
+
+export const updateChatSchema = z.object({
+    chatId: z.string(),
+    name: z.string().min(1).max(100).optional(),
+    userId: z.string(),
+});
+
+export const updateChatMemberSchema = z.object({
+    chatId: z.string(),
+    userId: z.string(),
+    action: z.enum(["ADD", "REMOVE"]),
+});
+
 export type CreateChatInput = z.infer<typeof createChatSchema>;
 export type SendMessageInput = z.infer<typeof sendMessageSchema>;
 export type AddReactionInput = z.infer<typeof addReactionSchema>;
+export type DeleteChatInput = z.infer<typeof deleteChatSchema>;
+export type UpdateChatInput = z.infer<typeof updateChatSchema>;
+export type UpdateChatMemberInput = z.infer<typeof updateChatMemberSchema>;
+

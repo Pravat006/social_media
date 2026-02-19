@@ -22,8 +22,9 @@ export interface ChatLeaveData {
 
 export interface ChatMessageData {
     chatId: string;
-    content: string;
+    content?: string;
     tempId?: string;
+    mediaIds?: string[];
 }
 
 export interface ChatTypingData {
@@ -37,8 +38,14 @@ export interface ChatReadData {
 }
 
 export interface ChatReactionData {
+    chatId: string;
     messageId: string;
-    reaction: string;  // Emoji or reaction type
+    reaction: string;
+}
+
+export interface ChatDeleteData {
+    chatId: string;
+    messageId: string;
 }
 
 
@@ -95,11 +102,11 @@ export interface ServerToClientEvents {
         senderId: string;
         senderUsername: string;
         senderName?: string | null;
-        senderAvatar?: string | null;
         content: string;
         type: 'USER' | 'SYSTEM' | 'CALL';
         createdAt: string;
         tempId?: string;
+        mediaIds?: string[];
     }) => void;
 
     'chat:typing': (data: {
@@ -122,6 +129,13 @@ export interface ServerToClientEvents {
         username: string;
         reaction: string;
         createdAt: string;
+    }) => void;
+
+    'chat:delete': (data: {
+        chatId: string;
+        messageId: string;
+        userId: string;
+        deletedAt: string;
     }) => void;
 
     // Live Stream Events
@@ -201,6 +215,7 @@ export interface ClientToServerEvents {
     'chat:typing': (data: ChatTypingData) => void;
     'chat:read': (data: ChatReadData) => void;
     'chat:reaction': (data: ChatReactionData) => void;
+    'chat:delete': (data: ChatDeleteData) => void;
 
     // Live Stream Events
     'live:join': (streamId: string) => void;
