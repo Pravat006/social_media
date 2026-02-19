@@ -5,8 +5,10 @@ import { z } from "zod";
  */
 export const commonEnvSchema = z.object({
     NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
-    PORT: z.coerce.number().default(8080),
+    HTTP_PORT: z.coerce.number().default(8080),
     CORS_ORIGIN: z.string().default("http://localhost:5173"),
+    VERCEL: z.string().optional(),
+    VERCEL_ENV: z.number().optional(),
 });
 
 /**
