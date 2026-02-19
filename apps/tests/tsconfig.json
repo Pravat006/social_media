@@ -1,0 +1,21 @@
+{
+    "extends": "../../packages/typescript-config/base.json",
+    "compilerOptions": {
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "baseUrl": ".",
+        "paths": {
+            "@/*": [
+                "../ws/src/*"
+            ]
+        },
+        "types": [
+            "node",
+            "jest"
+        ]
+    },
+    "include": [
+        "**/*.ts"
+    ]
+}
