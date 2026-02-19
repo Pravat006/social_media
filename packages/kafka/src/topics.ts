@@ -26,6 +26,12 @@ export const TOPICS = {
      * Consumed by: WebSocket server to remove message from UI
      */
     CHAT_MESSAGE_DELETED: "chat.message.deleted",
+    /**
+     * Message read topic
+     * Published when: User marks a message or chat as read
+     * Consumed by: WebSocket server for seen receipt updates
+     */
+    CHAT_MESSAGE_READ: "chat.message.read",
 
 
 
