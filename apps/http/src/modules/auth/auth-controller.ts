@@ -1,6 +1,6 @@
 import { asyncHandler } from "@/utils/async-handler";
 import { ApiResponse } from "@/interface/api-response";
-import { generateTokens, verifyRefreshToken } from "@/utils/generate-token";
+import { generateTokens, verifyRefreshToken } from "@/utils/jwt";
 import db from "@/services/db";
 import status from "http-status";
 import bcrypt from "bcryptjs";

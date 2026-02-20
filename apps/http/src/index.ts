@@ -5,7 +5,7 @@ import config from "@/config";
 
 // dotenv is already loaded by @repo/env-config
 
-const PORT = config.PORT || 3000;
+const PORT = config.HTTP_PORT || 3000;
 const HOST = '0.0.0.0';
 
 app.listen(PORT, HOST, () => {

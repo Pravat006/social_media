@@ -1,9 +1,7 @@
 import { ApiError } from "@/interface";
 import { NextFunction, Request, Response } from "express";
 import status from "http-status";
-import config from "@/config";
-import jwt from "jsonwebtoken";
-import { Payload } from "@/utils/generate-token";
+import { verifyAccessToken } from "@/utils/jwt";
 import db from "@/services/db";
 import { logger } from "@repo/logger";
 
@@ -19,7 +17,13 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
 
         const token = authHeader.replace('Bearer ', '');
 
-        const decoded = jwt.verify(token, config.JWT_ACCESS_TOKEN_SECRET) as Payload;
+        const decoded = verifyAccessToken(token);
+
+        if (!decoded) {
+            return next(
+                new ApiError(status.UNAUTHORIZED, "Invalid or expired token", "AUTH MIDDLEWARE")
+            );
+        }
 
         const user = await db.user.findUnique({
             where: {
