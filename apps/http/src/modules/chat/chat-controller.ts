@@ -10,6 +10,22 @@ import {
 } from "./chat-validation";
 
 /**
+ * Get all chats for the authenticated user
+ */
+export const getUserChats = asyncHandler(async (req, res) => {
+    const userId = req.user?.id;
+    if (!userId) {
+        throw new Error("User not authenticated");
+    }
+
+    const result = await chatService.getUserChats(userId);
+
+    return res
+        .status(status.OK)
+        .json(new ApiResponse(status.OK, "User chats retrieved successfully", result));
+});
+
+/**
  * Initialize a new chat (Direct or Group)
  */
 export const initChat = asyncHandler(async (req, res) => {

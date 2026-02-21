@@ -6,6 +6,7 @@ const router: Router = Router();
 
 router.use(authMiddleware);
 
+router.get("/", chatController.getUserChats);
 router.post("/", chatController.initChat);
 router.delete("/:chatId", chatController.deleteChat);
 router.patch("/:chatId", chatController.updateChat);
