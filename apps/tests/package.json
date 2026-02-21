@@ -4,18 +4,24 @@
   "private": true,
   "scripts": {
     "test": "jest",
+    "test:http": "jest --config jest.http.config.js",
+    "test:ws": "jest --config jest.ws.config.js",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
   },
   "devDependencies": {
+    "@repo/auth": "workspace:*",
+    "@repo/env-config": "workspace:*",
+    "@repo/shared": "workspace:*",
+    "@types/bcryptjs": "^3.0.0",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.11.24",
+    "@types/supertest": "^6.0.3",
+    "bcryptjs": "^3.0.3",
     "jest": "^29.7.0",
-    "ts-jest": "^29.1.2",
-    "typescript": "^5.7.3",
     "socket.io-client": "^4.8.1",
-    "@repo/shared": "workspace:*",
-    "@repo/auth": "workspace:*",
-    "@repo/env-config": "workspace:*"
+    "supertest": "^7.2.2",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.7.3"
   }
 }
