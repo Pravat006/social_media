@@ -40,6 +40,35 @@ class UserService {
             );
         }
     }
+    async getAllUsers(currentUserId: string) {
+        try {
+            const users = await db.user.findMany({
+                where: {
+                    id: { not: currentUserId }
+                },
+                select: {
+                    id: true,
+                    username: true,
+                    name: true,
+                    email: true,
+                    profilePicture: {
+                        select: {
+                            id: true,
+                            url: true,
+                            type: true
+                        }
+                    }
+                },
+                orderBy: { username: 'asc' }
+            });
+            return users;
+        } catch (error) {
+            throw new ApiError(
+                status.INTERNAL_SERVER_ERROR,
+                "Failed to fetch users"
+            );
+        }
+    }
 }
 
 export default new UserService();

@@ -1,6 +1,5 @@
 import app from "@/app";
 import { logger } from "@repo/logger";
-
 import config from "@/config";
 
 // dotenv is already loaded by @repo/env-config

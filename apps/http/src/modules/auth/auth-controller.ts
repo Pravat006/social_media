@@ -1,4 +1,5 @@
 import { asyncHandler } from "@/utils/async-handler";
+import { toUserDTO } from "../user/user-dto";
 import { ApiResponse } from "@/interface/api-response";
 import { generateTokens, verifyRefreshToken } from "@/utils/jwt";
 import db from "@/services/db";
@@ -43,7 +44,10 @@ export const register = asyncHandler(async (req, res) => {
             name: true,
             username: true,
             email: true,
+            isVerified: true,
+            isPrivate: true,
             createdAt: true,
+            updatedAt: true,
         }
     });
 
@@ -53,7 +57,7 @@ export const register = asyncHandler(async (req, res) => {
     return res
         .status(status.CREATED)
         .json(new ApiResponse(status.CREATED, "User registered successfully", {
-            user,
+            user: toUserDTO(user),
             tokens: {
                 accessToken,
                 refreshToken,
@@ -88,13 +92,10 @@ export const login = asyncHandler(async (req, res) => {
     // Generate tokens
     const { accessToken, refreshToken } = generateTokens(user);
 
-    // Exclude password from response
-    const { password: _, ...userData } = user;
-
     return res
         .status(status.OK)
         .json(new ApiResponse(status.OK, "User logged in successfully", {
-            user: userData,
+            user: toUserDTO(user),
             tokens: {
                 accessToken,
                 refreshToken,
