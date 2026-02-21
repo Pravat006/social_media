@@ -41,8 +41,7 @@ export const sendMessage = async <T = object>(
         });
         logger.info(`Message sent to topic: ${topic}`, { key });
     } catch (error) {
-        logger.error(`Failed to send message to topic: ${topic}`, error);
-        throw error;
+        logger.warn(`Kafka unavailable \u2014 skipping persist to topic: ${topic}`, { key, error: (error as Error).message });
     }
 }
 
