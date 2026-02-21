@@ -13,3 +13,6 @@ client.on('error', () => logger.error('[REDIS] Connection error'));
 client.on('end', () => logger.info('[REDIS] Connection closed.'));
 
 export default client;
+export {
+    client as redisClient
+}
