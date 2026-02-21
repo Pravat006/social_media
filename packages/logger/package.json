@@ -15,7 +15,8 @@
   "dependencies": {
     "morgan": "^1.10.0",
     "winston": "^3.11.0",
-    "winston-daily-rotate-file": "^4.7.1"
+    "winston-daily-rotate-file": "^4.7.1",
+    "@repo/env-config": "workspace:*"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
