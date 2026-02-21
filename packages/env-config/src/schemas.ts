@@ -80,6 +80,14 @@ export const websocketEnvSchema = z.object({
 });
 
 /**
+ * Client-side environment variables (Next.js)
+ */
+export const clientEnvSchema = z.object({
+    NEXT_PUBLIC_SERVER_URI: z.string().url().default("http://localhost:8080/api/v0"),
+    NEXT_PUBLIC_WS_URI: z.string().url().default("http://localhost:3001"),
+});
+
+/**
  * Complete environment schema - combines all schemas
  */
 export const envSchema = commonEnvSchema
@@ -89,9 +97,11 @@ export const envSchema = commonEnvSchema
     .merge(databaseEnvSchema)
     .merge(awsEnvSchema)
     .merge(websocketEnvSchema)
-    .merge(razorpayEnvSchema);
+    .merge(razorpayEnvSchema)
+    .merge(clientEnvSchema);
 
 export type EnvConfig = z.infer<typeof envSchema>;
+export type ClientEnvConfig = z.infer<typeof clientEnvSchema>;
 export type CommonEnvConfig = z.infer<typeof commonEnvSchema>;
 export type JwtEnvConfig = z.infer<typeof jwtEnvSchema>;
 export type RedisEnvConfig = z.infer<typeof redisEnvSchema>;

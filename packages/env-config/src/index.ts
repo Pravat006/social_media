@@ -10,7 +10,9 @@ export {
 
     websocketEnvSchema,
     razorpayEnvSchema,
+    clientEnvSchema,
     type EnvConfig,
+    type ClientEnvConfig,
     type CommonEnvConfig,
     type JwtEnvConfig,
     type RedisEnvConfig,
