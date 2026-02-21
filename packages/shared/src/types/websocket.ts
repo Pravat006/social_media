@@ -124,6 +124,7 @@ export interface ServerToClientEvents {
     }) => void;
 
     'chat:reaction': (data: {
+        chatId: string;
         messageId: string;
         userId: string;
         username: string;
@@ -205,6 +206,8 @@ export interface ServerToClientEvents {
         message: string;
         data?: any;
     }) => void;
+
+    'users:online_initial': (userIds: string[]) => void;
 }
 
 export interface ClientToServerEvents {

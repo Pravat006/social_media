@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ChatTypeEnum, MessageTypeEnum } from "../constants";
+import { ChatRoleEnum, ChatTypeEnum, MessageTypeEnum } from "../constants";
 
 // Chat schemas
 export const createChatSchema = z.object({
@@ -34,6 +34,7 @@ export const updateChatSchema = z.object({
 export const updateChatMemberSchema = z.object({
     chatId: z.string(),
     userId: z.string(),
+    role: ChatRoleEnum,
     action: z.enum(["ADD", "REMOVE"]),
 });
 

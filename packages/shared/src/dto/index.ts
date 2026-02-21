@@ -18,6 +18,7 @@ export * from './chat.dto';
 export * from './live.dto';
 export * from './user.dto';
 export * from './notification.dto';
+export * from './auth.dto';
 
 import type {
     ChatMessageDTO,

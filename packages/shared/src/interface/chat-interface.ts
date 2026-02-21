@@ -1,5 +1,5 @@
 import { IUser, IMedia } from './user-interface';
-import { ChatType, MessageType, CallType, CallStatus } from '../constants';
+import { ChatType, MessageType, CallType, CallStatus, ChatRole } from '../constants';
 
 export interface IChat {
     id: string;
@@ -16,6 +16,8 @@ export interface IChatMember {
     chatId: string;
     userId: string;
     joinedAt: Date;
+    role: ChatRole;
+    lastDeletedAt?: Date | null;
     chat?: IChat;
     user?: IUser;
 }

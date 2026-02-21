@@ -1,15 +1,15 @@
 /**
  * Chat-related Data Transfer Objects (DTOs)
- * 
- * Used for: HTTP responses, WebSocket events, Redis Pub/Sub, Kafka messages
  */
 
 import type {
     IMessage,
     IChat,
+    IChatMember,
     IMessageReaction,
     IMessageRead,
 } from '../interface';
+import type { UserDTO } from './user.dto';
 import type { Serialize } from './common';
 
 
@@ -34,6 +34,9 @@ export interface ChatMessageInputDTO {
  * Based on IChat interface
  */
 export interface ChatDTO extends Omit<Serialize<IChat>, 'members' | 'messages'> {
+    lastMessage?: ChatMessageDTO;
+    members?: ChatMemberDTO[];
+    unreadCount?: number;
 }
 
 /**
@@ -63,9 +66,16 @@ export interface ChatReactionDTO extends Serialize<IMessageReaction> {
 }
 
 /**
- * Chat member event
+ * Full chat member record
  */
-export interface ChatMemberDTO {
+export interface ChatMemberDTO extends Omit<Serialize<IChatMember>, 'user' | 'chat'> {
+    user?: UserDTO;
+}
+
+/**
+ * Chat member event (join/leave)
+ */
+export interface ChatMemberEventDTO {
     chatId: string;
     userId: string;
     username: string;

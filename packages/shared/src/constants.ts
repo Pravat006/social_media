@@ -36,6 +36,7 @@ export const MessageTypeEnum = z.enum(["USER", "SYSTEM", "CALL"]);
 export const CallTypeEnum = z.enum(["VIDEO", "AUDIO"]);
 export const CallStatusEnum = z.enum(["PENDING", "ACCEPTED", "REJECTED", "CANCELED", "ENDED", "MISSED"]);
 export const StreamVisibilityEnum = z.enum(["PUBLIC", "PRIVATE", "FOLLOWERS_ONLY"]);
+export const ChatRoleEnum = z.enum(["ADMIN", "MEMBER"]);
 
 // Type exports
 export type MediaType = z.infer<typeof MediaTypeEnum>;
@@ -44,3 +45,4 @@ export type MessageType = z.infer<typeof MessageTypeEnum>;
 export type CallType = z.infer<typeof CallTypeEnum>;
 export type CallStatus = z.infer<typeof CallStatusEnum>;
 export type StreamVisibility = z.infer<typeof StreamVisibilityEnum>;
+export type ChatRole = z.infer<typeof ChatRoleEnum>;
