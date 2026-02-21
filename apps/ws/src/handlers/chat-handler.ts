@@ -24,7 +24,7 @@ class ChatHandler {
 
         this.socket.on('chat:message', async (data: ChatMessageData) => {
             try {
-                const { chatId, content, mediaIds } = data;
+                const { chatId, content, mediaIds, tempId } = data;
                 const roomName = getChatRoomId(chatId);
 
                 const messageId = crypto.randomUUID();
@@ -48,13 +48,13 @@ class ChatHandler {
                     content: content || "",
                     type: 'USER',
                     createdAt,
+                    tempId,           // <-- forward tempId so sender can replace optimistic msg
                     mediaIds: mediaIds || [],
                 };
 
-
                 await sendMessage(TOPICS.CHAT_MESSAGE_SENT, kafkaPayload, chatId);
 
-                // Broadcast to chat room
+                // Broadcast to entire room (including sender)
                 this.io.to(roomName).emit('chat:message', broadcastPayload);
 
                 logger.debug(`Message sent in chat ${chatId} by user ${userId}`);
@@ -109,6 +109,7 @@ class ChatHandler {
                 };
 
                 const broadcastPayload: Parameters<ServerToClientEvents['chat:reaction']>[0] = {
+                    chatId,
                     messageId,
                     reaction,
                     userId,
@@ -116,11 +117,10 @@ class ChatHandler {
                     createdAt,
                 };
 
-
                 await sendMessage(TOPICS.CHAT_REACTION, kafkaPayload, chatId);
 
-
-                this.socket.to(roomName).emit('chat:reaction', broadcastPayload);
+                // Broadcast to entire room (including sender so they see their own reaction)
+                this.io.to(roomName).emit('chat:reaction', broadcastPayload);
             } catch (error) {
                 logger.error('Error adding reaction:', error);
             }

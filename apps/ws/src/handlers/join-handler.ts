@@ -1,4 +1,5 @@
 import { MembershipService } from "@/services/membeship-service";
+import { chatService } from "@/services/chat-service";
 import { logger } from "@repo/logger";
 import { IOServer, IOSocket } from "../@types";
 import { getChatRoomId } from "../utils/rooms";
@@ -20,7 +21,30 @@ class JoinHandler {
     }
 
     public register() {
+        // Auto-rejoin all previously known rooms the moment the socket connects
+        this.autoRejoinRooms();
         this.socket.on("chat:join", this.handleJoin.bind(this));
+    }
+
+    /**
+     * On connect, re-join every chat room the user is already a member of.
+     * This ensures: if User B sends a message to User A, User A receives it
+     * without needing to manually click on User B first.
+     */
+    private async autoRejoinRooms() {
+        const userId = this.socket.userId!;
+        try {
+            const cachedChatIds = await this.membership.loadMemberships(userId);
+            if (cachedChatIds.length === 0) {
+                logger.debug(`No cached rooms to rejoin for user ${userId}`);
+                return;
+            }
+            const roomNames = cachedChatIds.map(chatId => getChatRoomId(chatId));
+            this.socket.join(roomNames);
+            logger.info(`Auto-rejoined ${cachedChatIds.length} rooms for user ${userId}: [${cachedChatIds.join(", ")}]`);
+        } catch (error) {
+            logger.error("Error during auto-rejoin of rooms:", error);
+        }
     }
 
     private async handleJoin(
@@ -35,16 +59,24 @@ class JoinHandler {
                 return cb?.({ ok: true, chatId });
             }
 
+            // Check Redis cache first (fast path)
+            let isAllowed = await this.membership.isCachedMember(userId, chatId);
 
-            let isAllowed = await this.membership.isCachedMember(userId, chatId)
+            if (!isAllowed) {
+                isAllowed = await chatService.checkChatMembership(chatId, userId);
+                if (isAllowed) {
+                    // Warm the Redis cache so future checks are fast
+                    await this.membership.cacheMembership(userId, chatId);
+                }
+            }
+
             if (!isAllowed) {
                 return cb?.({ ok: false, error: "UNAUTHORIZED" });
             }
 
-
-            await this.membership.cacheMembership(userId, chatId)
-            this.socket.join(roomName)
-
+            // Always ensure membership is cached for future auto-rejoin on reconnect
+            await this.membership.cacheMembership(userId, chatId);
+            this.socket.join(roomName);
 
             cb?.({ ok: true, chatId });
 
@@ -53,7 +85,7 @@ class JoinHandler {
                 userId,
                 chatId,
                 username: user?.username || "Unknown",
-            })
+            });
 
             logger.info(`User ${userId} joined room ${chatId}`);
 
@@ -72,10 +104,6 @@ export const setUpJoinHandler = (
     const handler = new JoinHandler(io, socket, membership);
     handler.register();
 }
-
-
-
-
 
 
 

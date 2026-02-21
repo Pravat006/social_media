@@ -19,12 +19,15 @@ import { setupChatHandlers, setUpJoinHandler, setupPresenceHandler } from './han
 
 const startServer = async () => {
     try {
-        logger.info('Connecting to redis and kafka producer...');
-        await Promise.all([
+        logger.info('Connecting to redis...');
+        await Promise.allSettled([
             connectPublisher(),
             connectSubscriber(),
-            connectProducer()
         ]);
+        logger.info('Redis connected. Attempting Kafka connection (non-fatal)...');
+        connectProducer().catch((err) => {
+            logger.warn('Kafka producer unavailable — messages will not be persisted to Kafka', { error: err.message });
+        });
         const httpServer = http.createServer();
 
 
