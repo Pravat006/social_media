@@ -167,9 +167,11 @@ model Chat {
 }
 
 model ChatMember {
-  chatId   String
-  userId   String
-  joinedAt DateTime @default(now())
+  chatId        String
+  userId        String
+  joinedAt      DateTime  @default(now())
+  role          ChatRole  @default(MEMBER)
+  lastDeletedAt DateTime?
 
   chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -387,6 +389,11 @@ enum MessageType {
   USER
   SYSTEM
   CALL
+}
+
+enum ChatRole {
+  ADMIN
+  MEMBER
 }
 
 enum ChatType {
